@@ -75,10 +75,28 @@ This section will populate the cluster with useful tools
 kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/refs/tags/v3.28.2/manifests/calico.yaml
 ```
 ## Install Argocd
+Install the resources:
 ```shell
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
+Now modify the service:
+```shell
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+```
+Get the password:
+```shell
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d ; echo ''
+```
+Expose the service like this:
+```shell
+kubectl port-forward svc/argocd-server -n argocd 8080:443 --address='0.0.0.0'
+```
+Look for the master ip:
+```shell
+multipass list
+```
+Take the one that starts with 192.*.*.* and got that direction in your web browser with the port 8080 and login with the username "admin" and the password from the previous step. 
 ## Install Helm
 ```shell
 curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null

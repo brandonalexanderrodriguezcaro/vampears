@@ -20,7 +20,7 @@ su
 5. Run the prepare-node script:
 ```shell
 apt update && apt upgrade ; apt install curl
-curl -o https://raw.githubusercontent.com/brandonalexanderrodriguezcaro/vampirs/refs/heads/main/prepare-node.sh prepare-node.sh
+curl https://raw.githubusercontent.com/brandonalexanderrodriguezcaro/vampirs/refs/heads/main/prepare-node.sh > prepare-node.sh
 chmod +x prepare-node.sh 
 ./prepare-node.sh 
 ```

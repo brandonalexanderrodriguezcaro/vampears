@@ -67,3 +67,27 @@ deployment.apps/deployments-simple-deployment-deployment   2/2     2            
 NAME                                                                  DESIRED   CURRENT   READY   AGE   CONTAINERS   IMAGES    SELECTOR
 replicaset.apps/deployments-simple-deployment-deployment-79f65b855c   2         2         2       22s   busybox      busybox   app=deployments-simple-deployment-app,pod-template-hash=79f65b855c
 ```
+
+# Bootstrap the cluster
+This section will populate the cluster with useful tools
+## Install Calico
+```shell
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/refs/tags/v3.28.2/manifests/calico.yaml
+```
+## Install Argocd
+```shell
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
+## Install Helm
+```shell
+curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+sudo apt-get install apt-transport-https --yes
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+sudo apt-get update
+sudo apt-get install helm
+```
+## Install Prometheus
+```shell
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/refs/tags/v3.28.2/manifests/calico.yaml
+```

@@ -19,3 +19,16 @@ su
 apt update && apt upgrade ; apt install curl
 curl -o 
 ```
+5. On the master machine, initialize the cluster:
+```shell
+kubeadm init
+mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+chown $(id -u):$(id -g) $HOME/.kube/config
+kubeadm token create --print-join-command
+```
+6. On the worker node, copy the output of the last command and execute it in the worker node to join the cluster:
+```shell
+kubeadm join <api-server-ip:port> --token <token-value> --discovery-token-ca-cert-hash sha256:<hash value>
+```
+

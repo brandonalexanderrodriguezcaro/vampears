@@ -90,13 +90,31 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 ```
 Expose the service like this:
 ```shell
-kubectl port-forward svc/argocd-server -n argocd 8080:443 --address='0.0.0.0'
+kubectl expose service argocd-server --type=NodePort --target-port=8080 --name=argocd-ext -n argocd
 ```
-Look for the master ip:
+Look for the worker node ip:
 ```shell
 multipass list
 ```
-Take the one that starts with 192.*.*.* and got that direction in your web browser with the port 8080 and login with the username "admin" and the password from the previous step. 
+Now look for the ports exposed:
+```shell
+kubectl get svc -n argocd
+```
+You should see something like this:
+```shell
+NAME                                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+argocd-applicationset-controller          ClusterIP   10.97.120.243    <none>        7000/TCP,8080/TCP            77m
+argocd-dex-server                         ClusterIP   10.108.78.85     <none>        5556/TCP,5557/TCP,5558/TCP   77m
+argocd-ext                                NodePort    10.111.166.212   <none>        80:30445/TCP,443:31948/TCP   5s
+argocd-metrics                            ClusterIP   10.105.112.191   <none>        8082/TCP                     77m
+argocd-notifications-controller-metrics   ClusterIP   10.102.68.8      <none>        9001/TCP                     77m
+argocd-redis                              ClusterIP   10.107.210.156   <none>        6379/TCP                     77m
+argocd-repo-server                        ClusterIP   10.108.127.15    <none>        8081/TCP,8084/TCP            77m
+argocd-server                             ClusterIP   10.98.255.162    <none>        80/TCP,443/TCP               77m
+argocd-server-metrics                     ClusterIP   10.103.226.163   <none>        8083/TCP                     77m
+```
+Notice that the service argocd-ext is exposing the ports 30445 and 31948, check the values in your cluster and use the one related to the 443 of the internal service (in this example the value is 31948). Now open the web browser and search: ***https://[worker node ip]:[port of the ext service]***
+
 ## Install Helm
 ```shell
 curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
@@ -105,7 +123,45 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.
 sudo apt-get update
 sudo apt-get install helm
 ```
+Check helm:
+```shell
+helm --help
+```
 ## Install Prometheus
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/refs/tags/v3.28.2/manifests/calico.yaml
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm install prometheus prometheus-community/prometheus
+kubectl expose service prometheus-server --type=NodePort --target-port=9090 --name=prometheus-server-ext
+```
+## Install Grafana
+```shell
+helm repo add grafana https://grafana.github.io/helm-charts 
+helm repo update
+helm install grafana grafana/grafana
+kubectl expose service grafana --type=NodePort --target-port=3000 --name=grafana-ext
+```
+Now look for the ports exposed:
+```shell
+kubectl get svc 
+```
+You should see something like this:
+```shell
+NAME                                  TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+grafana                               ClusterIP   10.109.77.25     <none>        80/TCP         69m
+grafana-ext                           NodePort    10.105.216.226   <none>        80:30226/TCP   68m
+kubernetes                            ClusterIP   10.96.0.1        <none>        443/TCP        100m
+prometheus-alertmanager               ClusterIP   10.111.198.132   <none>        9093/TCP       73m
+prometheus-alertmanager-headless      ClusterIP   None             <none>        9093/TCP       73m
+prometheus-kube-state-metrics         ClusterIP   10.96.16.184     <none>        8080/TCP       73m
+prometheus-prometheus-node-exporter   ClusterIP   10.111.109.207   <none>        9100/TCP       73m
+prometheus-prometheus-pushgateway     ClusterIP   10.96.182.137    <none>        9091/TCP       73m
+prometheus-server                     ClusterIP   10.105.233.118   <none>        80/TCP         73m
+prometheus-server-ext                 NodePort    10.106.121.110   <none>        80:30506/TCP   72m
+```
+Notice that the service grafana-ext is exposing the ports 30226, check the values in your cluster. Now open the web browser and search: ***https://[worker node ip]:[port of the ext service]***
+
+To retrieve the password of the admin user use the following command:
+```shell
+kubectl get secret --namespace default grafana -o jsonpath="{.data.admin-password}" | base64 -d ; echo ""
 ```

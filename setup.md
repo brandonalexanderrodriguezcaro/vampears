@@ -10,16 +10,21 @@ multipass launch -n k8s-worker-1 -c 2 -m 4G -d 7G 22.04
 ```shell
 multipass shell [vm-name]
 ```
-4. Once you are there, run the set-up:
+4. Once you are there, run configure the root password:
 ```shell
 sudo passwd
 [define a password... e.g. ubuntu]
 su
 [enter password]
-apt update && apt upgrade ; apt install curl
-curl -o 
 ```
-5. On the master machine, initialize the cluster:
+5. Run the prepare-node script:
+```shell
+apt update && apt upgrade ; apt install curl
+curl -o https://raw.githubusercontent.com/brandonalexanderrodriguezcaro/vampirs/refs/heads/main/prepare-node.sh prepare-node.sh
+chmod +x prepare-node.sh 
+./prepare-node.sh 
+```
+6. On the master machine, initialize the cluster:
 ```shell
 kubeadm init
 mkdir -p $HOME/.kube
@@ -27,7 +32,7 @@ cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 chown $(id -u):$(id -g) $HOME/.kube/config
 kubeadm token create --print-join-command
 ```
-6. On the worker node, copy the output of the last command and execute it in the worker node to join the cluster:
+7. On the worker node, copy the output of the last command and execute it in the worker node to join the cluster:
 ```shell
 kubeadm join <api-server-ip:port> --token <token-value> --discovery-token-ca-cert-hash sha256:<hash value>
 ```

@@ -135,7 +135,7 @@ mkdir -p /mnt/data/prometheus
 ```
 Create the PVs and PVCs:
 ```shell
-kubectl apply -f 
+kubectl apply -f https://raw.githubusercontent.com/brandonalexanderrodriguezcaro/vampirs/refs/heads/main/pvs-pvcs.yaml
 ```
 ## Install Prometheus
 ```shell

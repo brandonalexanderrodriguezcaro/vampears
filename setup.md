@@ -127,6 +127,16 @@ Check helm:
 ```shell
 helm --help
 ```
+## Prepare a persistente volume for grafana and prometheus
+Got to the worker node an create 2 folders under /mnt/data:
+```shell
+mkdir -p /mnt/data/grafana-data
+mkdir -p /mnt/data/prometheus
+```
+Create the PVs and PVCs:
+```shell
+kubectl apply -f 
+```
 ## Install Prometheus
 ```shell
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -134,6 +144,26 @@ helm repo update
 helm install prometheus prometheus-community/prometheus
 kubectl expose service prometheus-server --type=NodePort --target-port=9090 --name=prometheus-server-ext
 ```
+Now look for the ports exposed:
+```shell
+kubectl get svc 
+```
+You should see something like this:
+```shell
+NAME                                  TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+grafana                               ClusterIP   10.109.77.25     <none>        80/TCP         69m
+grafana-ext                           NodePort    10.105.216.226   <none>        80:30226/TCP   68m
+kubernetes                            ClusterIP   10.96.0.1        <none>        443/TCP        100m
+prometheus-alertmanager               ClusterIP   10.111.198.132   <none>        9093/TCP       73m
+prometheus-alertmanager-headless      ClusterIP   None             <none>        9093/TCP       73m
+prometheus-kube-state-metrics         ClusterIP   10.96.16.184     <none>        8080/TCP       73m
+prometheus-prometheus-node-exporter   ClusterIP   10.111.109.207   <none>        9100/TCP       73m
+prometheus-prometheus-pushgateway     ClusterIP   10.96.182.137    <none>        9091/TCP       73m
+prometheus-server                     ClusterIP   10.105.233.118   <none>        80/TCP         73m
+prometheus-server-ext                 NodePort    10.106.121.110   <none>        80:30506/TCP   72m
+```
+Notice that the service prometheus-server-ext is exposing the ports 30506, check the values in your cluster. Now open the web browser and search: ***https://[worker node ip]:[port of the ext service]***
+
 ## Install Grafana
 ```shell
 helm repo add grafana https://grafana.github.io/helm-charts 

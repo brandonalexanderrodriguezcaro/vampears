@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: vampirs-observer
-        image: brandonrodriguez/vampirs-observer:0.0.1
+        image: brandonrodriguez/vampirs-observer:0.0.2
         #args: ["-config", "/config/config.conf"]  # Pass the -config flag with the file path
         volumeMounts:
         - name: config-volume
